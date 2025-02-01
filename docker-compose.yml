@@ -1,0 +1,106 @@
+services:
+  discovery-service:
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+    build:
+      context: ./discovery-service
+    image: restaurantesfjus/discovery-service:latest  # Etiqueta de la imagen en Docker Hub
+    restart: always
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - mired
+
+  config-service:
+    build:
+      context: ./config-service
+    image: restaurantesfjus/config-service:latest  # Etiqueta de la imagen en Docker Hub
+    restart: always
+    container_name: config-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+    ports:
+      - "8888:8888"
+    depends_on:
+      - discovery-service
+      - mysql
+    networks:
+      - mired
+
+  gateway-service:
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+    build:
+      context: ./gateway-service
+    image: restaurantesfjus/gateway-service:latest  # Etiqueta de la imagen en Docker Hub
+    restart: always
+    container_name: gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - discovery-service
+      - config-service
+    networks:
+      - mired
+  customer-servise:
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/db_nuestra_empresa
+      - SPRING_DATASOURCE_USERNAME=myuser
+      - SPRING_DATASOURCE_PASSWORD=mypassword
+    build:
+      context: ./customer-servise
+    image: restaurantesfjus/customer-servise:latest  # Etiqueta de la imagen en Docker Hub
+    restart: always
+    container_name: CustomerService
+    ports:
+      - "9091:9091"
+    depends_on:
+      - mysql
+      - gateway-service
+      - discovery-service
+      - config-service
+    networks:
+      - mired
+  booking-service:
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/db_nuestra_empresa
+      - SPRING_DATASOURCE_USERNAME=myuser
+      - SPRING_DATASOURCE_PASSWORD=mypassword
+    build:
+      context: ./booking-service
+    image: restaurantesfjus/booking-service:latest  # Etiqueta de la imagen en Docker Hub
+    restart: always
+    container_name: bocking-service
+    ports:
+      - "9092:9092"
+    depends_on:
+      - mysql
+      - gateway-service
+      - discovery-service
+      - config-service
+    networks:
+      - mired
+  mysql:
+    image: mysql:8
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456789
+      MYSQL_DATABASE: db_nuestra_empresa
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: mypassword
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - mired
+
+volumes:
+  mysql-data:
+networks:
+  mired:
