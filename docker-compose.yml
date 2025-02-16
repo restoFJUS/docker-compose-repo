@@ -85,6 +85,27 @@ services:
       - config-service
     networks:
       - mired
+  client-service:
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/db_nuestra_empresa
+      - SPRING_DATASOURCE_USERNAME=myuser
+      - SPRING_DATASOURCE_PASSWORD=mypassword
+    build:
+      context: ./client-service
+    #image: restaurantesfjus/client-service:latest  # Etiqueta de la imagen en Docker Hub
+    restart: always
+    container_name: client-service
+    ports:
+      - "9094:9094"
+    depends_on:
+      - mysql
+      - gateway-service
+      - discovery-service
+      - config-service
+    networks:
+      - mired
   mysql:
     image: mysql:8
     container_name: mysql
