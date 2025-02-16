@@ -94,7 +94,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=mypassword
     build:
       context: ./client-service
-    #image: restaurantesfjus/client-service:latest  # Etiqueta de la imagen en Docker Hub
+    image: restaurantesfjus/client-service:latest  # Etiqueta de la imagen en Docker Hub
     restart: always
     container_name: client-service
     ports:
