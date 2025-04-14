@@ -43,6 +43,27 @@ services:
       - config-service
     networks:
       - mired
+  auth-service:
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/db_nuestra_empresa
+      - SPRING_DATASOURCE_USERNAME=myuser
+      - SPRING_DATASOURCE_PASSWORD=mypassword
+    build:
+      context: ./auth-service
+    image: restaurantesfjus/auth-service:latest  # Etiqueta de la imagen en Docker Hub
+    restart: always
+    container_name: AuthService
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mysql
+      - gateway-service
+      - discovery-service
+      - config-service
+    networks:
+      - mired
   customer-servise:
     environment:
       - SPRING_PROFILES_ACTIVE=dev
@@ -85,7 +106,7 @@ services:
       - config-service
     networks:
       - mired
-  client-service:
+  user-service:
     environment:
       - SPRING_PROFILES_ACTIVE=dev
       - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
@@ -93,12 +114,12 @@ services:
       - SPRING_DATASOURCE_USERNAME=myuser
       - SPRING_DATASOURCE_PASSWORD=mypassword
     build:
-      context: ./client-service
-    image: restaurantesfjus/client-service:latest  # Etiqueta de la imagen en Docker Hub
+      context: ./user-service
+    image: restaurantesfjus/user-service:latest  # Etiqueta de la imagen en Docker Hub
     restart: always
-    container_name: client-service
+    container_name: UserService
     ports:
-      - "9094:9094"
+      - "9093:9093"
     depends_on:
       - mysql
       - gateway-service
